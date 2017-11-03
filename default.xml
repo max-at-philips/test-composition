@@ -5,7 +5,7 @@
 
   <remote name="origin" fetch="ssh://git@github.com/max-at-philips/"/>
 
-  <project remote="origin" name="test-comp-a" path="a" upstream="test-develop" revision="test-develop"/>
+  <project remote="origin" name="test-comp-a" path="a" upstream="test-develop" revision="feature/h2"/>
   <project remote="origin" name="test-comp-b" path="b" upstream="test-develop" revision="test-develop"/>
 
 </manifest>
