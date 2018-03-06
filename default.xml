@@ -5,5 +5,5 @@
   <default upstream="test-develop"/>
   
   <project name="test-comp-a" path="a" remote="origin" revision="somebranch" upstream="test-develop"/>
-  <project name="test-comp-b" path="b" remote="origin" revision="test-develop" upstream="test-develop"/>
+  <project name="test-comp-b" path="b" remote="origin" revision="somebranch" upstream="test-develop"/>
 </manifest>
