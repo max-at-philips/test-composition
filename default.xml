@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <manifest>
   <remote fetch="ssh://git@github.com/max-at-philips/" name="origin"/>
   
   <default upstream="develop"/>
   
-  <project name="test-comp-a" path="a" remote="origin" revision="develop" upstream="develop"/>
+  <project name="test-comp-a" path="a" remote="origin" revision="feature/test7" upstream="develop"/>
   <project name="test-comp-b" path="b" remote="origin" revision="develop" upstream="develop"/>
 </manifest>
