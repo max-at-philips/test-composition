@@ -5,5 +5,5 @@
   <default upstream="develop"/>
   
   <project name="test-comp-a" path="a" remote="origin" revision="feature/test-smipi1" upstream="develop"/>
-  <project name="test-comp-b" path="b" remote="origin" revision="develop" upstream="develop"/>
+  <project name="test-comp-b" path="b" remote="origin" revision="feature/test-smipi1" upstream="develop"/>
 </manifest>
