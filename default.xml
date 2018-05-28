@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
-  <remote fetch="ssh://git@github.com/max-at-philips/" name="origin"/>
+  <remote fetch="ssh://git@github.com:PhilipsHueDev/" name="origin"/>
   
   <default upstream="develop"/>
   
