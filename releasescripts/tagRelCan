@@ -107,7 +107,6 @@ if [ $? -eq 0 ]; then
 	# Push the manifest and its tag to origin (a new promotion build is started)
     git push origin $1
     git push origin $2
-fi
 else
 	echo "Could not navigate to the manifest directory...please run this tool in the root directory of your project"
 fi
