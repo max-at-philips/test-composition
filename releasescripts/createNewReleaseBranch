@@ -77,7 +77,7 @@ if [ $? -eq 0 ]; then
     fi
 
     git push --set-upstream origin $1
-`    if [ $? -eq 0 ]; then 
+    if [ $? -eq 0 ]; then 
 	    echo "Created branch $1 was successfully pushed to server at manifest"
        repo forall  $(repo forall -c 'echo $REPO_PROJECT' | grep -v bsb002-zigbee) -c 'pwd; git push --set-upstream origin '$1'' 
        if [ $? -eq 0 ]; then 
