@@ -58,7 +58,7 @@ if [ $? -eq 0 ]; then
 				grep -rl $PI_NUMBER | xargs sed -i 's/'$PI_NUMBER'/'$BUMPED_PI'/g'
 				echo "The PI-number has been increased to : $BUMPED_PI"
 				git commit -am "Bumped PI number to $BUMPED_PI"
-				git push --set-upstream origin develop
+				git push origin HEAD:develop
 			fi
 
 			repo forall  $(repo forall -c 'echo $REPO_PROJECT' | grep -v bsb002-zigbee) -c 'pwd; git checkout -b '$1'' 
@@ -110,7 +110,7 @@ if [ $? -eq 0 ]; then
     done < default.xml > temp.xml && mv temp.xml default.xml
     echo "Manifest :all components track : '$1'"
     git commit -am "All components track : '$1'"
-    git push --set-upstream origin develop
+    git push --set-upstream origin $1 
 
 else
     echo "Could not navigate to the manifest directory...please run this tool in the root directory of your project"
