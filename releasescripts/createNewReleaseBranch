@@ -52,7 +52,7 @@ if [ $? -eq 0 ]; then
     if [ $? -eq 0 ]; then
        repo sync -d -j8 
        if [ $? -eq 0 ]; then
-			if [ $BUMP -eq 1]; then
+			if [ $BUMP -eq 1 ]; then
 				PI_NUMBER=`cat releasescripts/PI-number.txt`
 				BUMPED_PI=`echo $PI_NUMBER | awk -F. '{$NF = $NF + 1;} 1'| sed 's/ /./g'`
 				grep -rl $PI_NUMBER | xargs sed -i 's/'$PI_NUMBER'/'$BUMPED_PI'/g'
