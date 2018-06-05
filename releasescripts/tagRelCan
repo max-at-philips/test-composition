@@ -75,7 +75,7 @@ if [ $? -eq 0 ]; then
    while read line; do
       echo $line | grep -q 'refs/tags/' 
       if [ ${PIPESTATUS[1]} -eq 1 ]; then
-         echo $line | sed 's@\(.*revision="\)[^ ]*\("\)@\1"refs/tags/'$2'"\2@'
+         echo $line | sed 's@\(.*revision="\)[^ ]*\("\)@\1refs/tags/'$2'\2@'
       else 
          echo $line
       fi
