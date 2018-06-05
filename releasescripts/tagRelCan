@@ -1,0 +1,114 @@
+#! /bin/bash
+
+read -d '' USAGE <<- EOF
+    Usage: `basename $0` [-hv] release_branch release_tag  
+
+    1 Tags the latest commits at the release_branch with the release_tag
+      passed as arguments
+    2 Changes the manifest to track the tags at each component 
+    3 Pushes all components and manifest to origin
+ 
+    Run this tool in the root of your workspace!!
+
+    -h      print help 
+    -v      version 
+EOF
+
+# Parse command line options.
+while getopts hv OPT; do
+    case "$OPT" in
+        h)
+            echo "$USAGE"
+            exit 0
+            ;;
+        v)
+            echo "`basename $0` version 0.1"
+            exit 0
+            ;;
+        \?)
+            # getopts issues an error message
+            echo "$USAGE" >&2
+            exit 1
+            ;;
+    esac
+done
+
+# Remove the switches we parsed above.
+shift `expr $OPTIND - 1`
+
+# We want at least one non-option argument. 
+# Remove this block if you don't need it.
+if [ $# -eq 0 ]; then
+    echo "$USAGE" >&2
+    exit 1
+fi
+
+cd .repo/manifests
+if [ $? -eq 0 ]; then
+  	# Checkout releasebranch for all components and manifest
+   repo forall  $(repo forall -c 'echo $REPO_PROJECT' | grep -v bsb002-zigbee) -c 'pwd; git checkout '$1'; git pull'
+	if [ $? -eq 0 ]; then
+		 echo "------Checked out branch $1 at all components------"
+	else
+		 echo "------Failed to checkout branch $1 at one of the components------"
+		 exit 1
+	fi
+
+	git checkout $1; git pull
+	if [ $? -eq 0 ]; then
+		echo "------Checked out branch $1 at manifest------"
+	else
+		echo "------Failed to checkout branch $1 at manifest------"
+		exit 1
+	fi
+
+	# First tag all components at the release branch 
+	repo forall  $(repo forall -c 'echo $REPO_PROJECT' | grep -v bsb002-zigbee) -c 'pwd; git tag '$2''
+	if [ $? -eq 0 ]; then 
+		echo "------ Tagged branch $1 with tag : $2 at each component------"
+	else
+		echo "------ Failed to tag branch $1 at components------"
+	   exit 1
+	fi
+
+	# Update the manifest at the release branch so all components track the tag
+	while read line; do
+		echo $line | grep -q 'refs/tags/' 
+	   if [ ${PIPESTATUS[1]} -eq 1 ]; then
+			echo $line | sed 's@\(.*revision=refs/tags/"\)[^ ]*\("\)@\1'$2'\2@'
+	   else 
+		   echo $line
+	   fi
+	done < default.xml > temp.xml && mv temp.xml default.xml
+	echo "Manifest :all components track : '$2'"
+	git commit -am "All components track : '$2'"
+
+	# Next also tag the manifest
+   git tag '$2'
+
+	#push all changes to origin
+	repo forall  $(repo forall -c 'echo $REPO_PROJECT' | grep -v bsb002-zigbee) -c 'pwd; git push origin '$1''
+	if [ $? -eq 0 ]; then 
+		echo "------Pushed $1 to origin for all components -------"
+	else
+		echo "----- Failed to push $1 to origin for all components ------"
+	     exit 1
+	fi
+
+	#push the new tag of all components to origin
+	repo forall  $(repo forall -c 'echo $REPO_PROJECT' | grep -v bsb002-zigbee) -c 'pwd; git push origin '$2''
+	if [ $? -eq 0 ]; then 
+        echo "------ Pushed tag $2 to origin for all components ------"
+    else
+        echo "------ Failed to push tag $2 to origin for all components-------"
+        exit 1
+    fi
+
+	# Push the manifest and its tag to origin (a new promotion build is started)
+    git push origin $1
+    git push origin $2
+fi
+else
+	echo "Could not navigate to the manifest directory...please run this tool in the root directory of your project"
+fi
+

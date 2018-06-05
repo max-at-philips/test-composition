@@ -1,0 +1,119 @@
+#! /bin/bash
+
+read -d '' USAGE <<- EOF
+    Usage: `basename $0` [-hvb] new_releasebranch_name 
+
+    Create and checkout new a new release branche from develop in your workspace  
+
+    !!!!!Run this tool in the root of your workspace!!!!!
+
+    -h      print help 
+    -v      show version    
+    -b      bump (increase) the version number at the develop branch (stored in PI-number.txt)
+EOF
+
+BUMP=0
+
+# Parse command line options.
+while getopts hvb OPT; do
+    case "$OPT" in
+        h)
+            echo "$USAGE"
+            exit 0
+            ;;
+        v)
+            echo "`basename $0` version 0.1"
+            exit 0
+            ;;
+        b)
+            BUMP=1
+            ;;        
+        \?)
+            # getopts issues an error message
+            echo "$USAGE" >&2
+            exit 1
+            ;;
+    esac
+done
+
+# Remove the switches we parsed above.
+shift `expr $OPTIND - 1`
+
+# We want at least one non-option argument. 
+# Remove this block if you don't need it.
+if [ $# -eq 0 ]; then
+    echo "$USAGE" >&2
+    exit 1
+fi
+
+cd .repo/manifests
+if [ $? -eq 0 ]; then
+    repo init -b develop 
+    if [ $? -eq 0 ]; then
+       repo sync -d -j8 
+       if [ $? -eq 0 ]; then
+			if [ $BUMP -eq 1]; then
+				PI_NUMBER=`cat releasescripts/PI-number.txt`
+				BUMPED_PI=`echo $PI_NUMBER | awk -F. '{$NF = $NF + 1;} 1'| sed 's/ /./g'`
+				grep -rl $PI_NUMBER | xargs sed -i 's/'$PI_NUMBER'/'$BUMPED_PI'/g'
+				echo "The PI-number has been increased to : $BUMPED_PI"
+				git commit -am "Bumped PI number to $BUMPED_PI"
+				git push 
+			fi
+
+			repo forall  $(repo forall -c 'echo $REPO_PROJECT' | grep -v bsb002-zigbee) -c 'pwd; git checkout -b '$1'' 
+    	 	if [ $? -eq 0 ]; then 
+         	echo "Created branch $1 at all components"
+ 
+         	git checkout -b $1
+            if [ $? -eq 0 ]; then 
+         	   echo "Created branch $1 at manifest"
+            else
+         	   echo "Failed to create branch $1 at manifest"
+               exit 1
+            fi
+	      else	
+         	echo "Failed to create branch $1 at one of the components"
+            exit 1 
+         fi
+       else
+          echo "Failed to workspace bring workspace in sync"
+          exit 1 
+       fi   
+    else
+       echo "Failed to checkout develop for repository"
+       exit 1     
+    fi
+
+    git push --set-upstream origin $1
+    if [ $? -eq 0 ]; then 
+	    echo "Created branch $1 was successfully pushed to server at manifest"
+       repo forall  $(repo forall -c 'echo $REPO_PROJECT' | grep -v bsb002-zigbee) -c 'pwd; git push --set-upstream origin '$1'' 
+       if [ $? -eq 0 ]; then 
+            echo "Pushed created branch $1 to server for every component"
+       else
+            echo "Failed to push branch created $1 to server at one of the components"
+            exit 1
+       fi
+    else
+       echo "Failed to push created branch $1 to server at manifest"
+       exit 1
+    fi
+
+    while read line; do
+        echo $line | grep -q 'refs/tags/' 
+        if [ ${PIPESTATUS[1]} -eq 1 ]; then
+            echo $line | sed 's@\(.*upstream="\)[^ ]*\("\)@\1'$1'\2@' | sed 's@\(.*revision="\)[^ ]*\("\)@\1'$1'\2@'
+        else 
+            echo $line
+        fi
+    done < default.xml > temp.xml && mv temp.xml default.xml
+    echo "Manifest :all components track : '$1'"
+    git commit -am "All components track : '$1'"
+    git push 
+
+else
+    echo "Could not navigate to the manifest directory...please run this tool in the root directory of your project"
+    exit 1
+fi
+
