@@ -1,0 +1,5 @@
+#!/bin/bash
+
+PR=$(repo pullreq -l | grep https://github.com/PhilipsHueDev/hue-bridge-compositions/pull | grep -P [^\/]+$ -o)
+ID=$(curl -H "Authorization: token 1918101a70c043756c3b106000d02d0b2a8e0be5" https://api.github.com/repos/PhilipsHueDev/hue-bridge-compositions/pulls/$PR/reviews | jq '.[length-1]'.id'')
+curl -H "Authorization: token 1918101a70c043756c3b106000d02d0b2a8e0be5" --request PUT --data '{"message":"test failure"}' https://api.github.com/repos/PhilipsHueDev/hue-bridge-compositions/pulls/$PR/reviews/$ID/dismissals

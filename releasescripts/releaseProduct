@@ -1,0 +1,146 @@
+#! /bin/bash
+
+read -d '' USAGE <<- EOF
+    Usage: `basename $0` [-hvr] release_branch release_tag
+        
+        Script will : 
+        Deploy the promoted build to SVN
+	    Copy the promoted build to the master dir at the NW share 
+		In case of RC : Master is fast-forwarded to track the tag of the new RC
+	
+    Run this tool in the root of your workspace!!
+
+    -h      print help 
+    -v      version 
+    -r      release candidate - master is fast-forwarded to track latest RC
+EOF
+
+RELCAN=0
+
+# Parse command line options.
+while getopts hvr OPT; do
+    case "$OPT" in
+        h)
+            echo "$USAGE"
+            exit 0
+            ;;
+        v)
+            echo "`basename $0` version 0.1"
+            exit 0
+            ;;
+        r)
+            RELCAN=1
+            ;;
+        \?)
+            # getopts issues an error message
+            echo "$USAGE" >&2
+            exit 1
+            ;;
+    esac
+done
+
+# Remove the switches we parsed above.
+shift `expr $OPTIND - 1`
+
+# We want at least one non-option argument. 
+# Remove this block if you don't need it.
+if [ $# -eq 0 ]; then
+    echo "$USAGE" >&2
+    exit 1
+fi
+
+cd .repo/manifests
+if [ $? -eq 0 ]; then
+	#First copy the artifacts to the master branch at the NW share 
+	#cp `ls -tr1 /mnt/Autobuilds/$1/ | tail -1` /mnt/Autobuilds/master
+	#if [ $? -eq 0 ]; then
+	#	echo "------Copied build artifacts from $1 to master ------"
+	#else
+	#	echo "------Failed to copy artifacts to master ------"
+	#	exit 1
+	#fi
+
+	# Copy the artifacts to SVN
+	#rm -rf ~/tmp
+	#mkdir -p ~/tmp
+	#cd ~/tmp/
+	#tar -zxvf /mnt/Autobuilds/$1/`ls -tr1 /mnt/Autobuilds/$1/ | tail -1`
+	#cd ~/svn_releases/Software/
+	#mkdir -p `cat ~/tmp/revision.txt`
+	#cd `cat ~/tmp/revision.txt`
+	#cp -r ~/tmp/* .
+	#cd ..
+	#svn add `cat ~/tmp/revision.txt` --parents --no-ignore 
+	#svn commit -m "Commit new release `cat ~/tmp/revision.txt` $2"
+	#rm -rf ~/tmp
+
+	# In case of a RC the delivery is tagged and the tags are merged to master 
+    if [ $RELCAN -eq 1 ]; then		
+
+		# Checkout releasebranch for all components and manifest
+        repo forall  $(repo forall -c 'echo $REPO_PROJECT' | grep -v bsb002-zigbee) -c 'pwd; git checkout '$1'; git pull'
+		if [ $? -eq 0 ]; then
+			 echo "------Checked out branch $1 at all components------"
+		else
+			 echo "------Failed to checkout branch $1 at one of the components------"
+			 exit 1
+		fi
+		git checkout $1; git pull
+		if [ $? -eq 0 ]; then
+			 echo "------Checked out branch $1 at manifest------"
+		else
+			 echo "------Failed to checkout branch $1 at manifest------"
+			 exit 1
+		fi
+
+		# Checkout master for all components and manifest
+		repo forall  $(repo forall -c 'echo $REPO_PROJECT' | grep -v bsb002-zigbee) -c 'pwd; git checkout master; git pull'
+		if [ $? -eq 0 ]; then
+		     echo "------Checked out branch  master at all components------"
+		else
+		     echo "------Failed to checkout branch master at one of the components------"
+		     exit 1
+		fi
+		git checkout master; git pull
+		if [ $? -eq 0 ]; then
+		    echo "------Checked out branch master at manifest------"
+		else
+		    echo "------Failed to checkout branch master at manifest------"
+		    exit 1
+		fi
+
+		# Fast forward master to track the applied tags of all components and manifest
+		repo forall  $(repo forall -c 'echo $REPO_PROJECT' | grep -v bsb002-zigbee) -c 'pwd; git merge --ff-only '$2''
+		if [ $? -eq 0 ]; then 
+		     echo "-------Master is fast-forwarded to the track $2 for all components------"
+		else
+		     echo "------Failed to fast forward master to track $2 for all components------"
+		     exit 1
+		fi
+		git merge --ff-only $2
+		if [ $? -eq 0 ]; then 
+		     echo "-------Master is fast-forwarded to the track $2 for the manifest------"
+		else
+		     echo "------Failed to fast forward master to track $2 for the manifest------"
+		     exit 1
+		fi
+
+		# Push master to origin for all components and manifest
+		repo forall  $(repo forall -c 'echo $REPO_PROJECT' | grep -v bsb002-zigbee) -c 'pwd; git push origin master'
+		if [ $? -eq 0 ]; then 
+		     echo "------Pushed master to origin for all components -------"
+		else
+		     echo "----- Failed to push master to origin for all components ------"
+		     exit 1
+		fi
+		git push origin master
+		if [ $? -eq 0 ]; then 
+		     echo "------Pushed master to origin for manifest -------"
+		else
+		     echo "----- Failed to push master to origin for manifest ------"
+		     exit 1
+		fi
+    fi
+else
+	 echo "Could not navigate to the manifest directory...please run this tool in the root directory of your project"
+fi

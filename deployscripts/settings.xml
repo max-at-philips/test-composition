@@ -1,0 +1,25 @@
+<settings>
+	<profiles>
+		<profile>
+			<id>hueiv</id>
+			<properties>
+				<repos.url>http://hueivdb.ddns.nl-ein116.lan.intra.lighting.com:8081/artifactory/libs-release-local
+				</repos.url>
+			</properties>
+			<repositories>
+				<repository>
+					<id>archiva.hueiv</id>
+					<name>libs-release-local</name>
+					<url>http://hueivdb.ddns.nl-ein116.lan.intra.lighting.com:8081/artifactory/libs-release-local</url>
+				</repository>
+			</repositories>
+		</profile>
+	</profiles>  
+	<servers>
+		<server>
+			<id>archiva.hueiv</id>
+			<username>huebridge</username>
+			<password>1TNbfu%D#XFzLSuHdOlJ</password>
+		</server>
+	</servers>
+</settings>
