@@ -52,27 +52,27 @@ fi
 cd .repo/manifests
 if [ $? -eq 0 ]; then
 	#First copy the artifacts to the master branch at the NW share 
-	cp `ls -tr1 /mnt/Autobuilds/$1/ | tail -1` /mnt/Autobuilds/master
-	if [ $? -eq 0 ]; then
-		echo "------Copied build artifacts from $1 to master ------"
-	 else
-		echo "------Failed to copy artifacts to master ------"
-		exit 1
-	fi
+	#cp `ls -tr1 /mnt/Autobuilds/$1/ | tail -1` /mnt/Autobuilds/master
+	#if [ $? -eq 0 ]; then
+	#	echo "------Copied build artifacts from $1 to master ------"
+	#else
+	#	echo "------Failed to copy artifacts to master ------"
+	#	exit 1
+	#fi
 
 	# Copy the artifacts to SVN
-	rm -rf ~/tmp
-	mkdir -p ~/tmp
-	cd ~/tmp/
-	tar -zxvf /mnt/Autobuilds/$1/`ls -tr1 /mnt/Autobuilds/$1/ | tail -1`
-	cd ~/svn_releases/Software/
-	mkdir -p `cat ~/tmp/revision.txt`
-	cd `cat ~/tmp/revision.txt`
-	cp -r ~/tmp/* .
-	cd ..
-	svn add `cat ~/tmp/revision.txt` --parents --no-ignore 
-	svn commit -m "Commit new release `cat ~/tmp/revision.txt` $2"
-	rm -rf ~/tmp
+	#rm -rf ~/tmp
+	#mkdir -p ~/tmp
+	#cd ~/tmp/
+	#tar -zxvf /mnt/Autobuilds/$1/`ls -tr1 /mnt/Autobuilds/$1/ | tail -1`
+	#cd ~/svn_releases/Software/
+	#mkdir -p `cat ~/tmp/revision.txt`
+	#cd `cat ~/tmp/revision.txt`
+	#cp -r ~/tmp/* .
+	#cd ..
+	#svn add `cat ~/tmp/revision.txt` --parents --no-ignore 
+	#svn commit -m "Commit new release `cat ~/tmp/revision.txt` $2"
+	#rm -rf ~/tmp
 
 	# In case of a RC the delivery is tagged and the tags are merged to master 
     if [ $RELCAN -eq 1 ]; then		
@@ -110,7 +110,7 @@ if [ $? -eq 0 ]; then
 		fi
 
 		# Fast forward master to track the applied tags of all components and manifest
-		repo forall  $(repo forall -c 'echo $REPO_PROJECT' | grep -v bsb002-zigbee) -c 'pwd; git merge -ff-only '$2''
+		repo forall  $(repo forall -c 'echo $REPO_PROJECT' | grep -v bsb002-zigbee) -c 'pwd; git merge --ff-only '$2''
 		if [ $? -eq 0 ]; then 
 		     echo "-------Master is fast-forwarded to the track $2 for all components------"
 		else

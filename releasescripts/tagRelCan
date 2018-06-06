@@ -73,12 +73,12 @@ if [ $? -eq 0 ]; then
 
    # Update the manifest at the release branch so all components track the tag
    while read line; do
-      echo $line | grep -q 'refs/tags/' 
-      if [ ${PIPESTATUS[1]} -eq 1 ]; then
-         echo $line | sed 's@\(.*revision="\)[^ ]*\("\)@\1refs/tags/'$2'\2@'
-      else 
-         echo $line
-      fi
+      #echo $line | grep -q 'refs/tags/' 
+      #if [ ${PIPESTATUS[1]} -eq 1 ]; then
+      echo $line | sed 's@\(.*revision="\)[^ ]*\("\)@\1refs/tags/'$2'\2@'
+      #else 
+      #   echo $line
+      #fi
    done < default.xml > temp.xml && mv temp.xml default.xml
    echo "Manifest :all components track : '$2'"
    git commit -am "All components track : '$2'"
