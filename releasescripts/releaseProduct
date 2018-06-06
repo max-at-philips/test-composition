@@ -117,7 +117,7 @@ if [ $? -eq 0 ]; then
 		     echo "------Failed to fast forward master to track $2 for all components------"
 		     exit 1
 		fi
-		git merge -ff-only $2
+		git merge --ff-only $2
 		if [ $? -eq 0 ]; then 
 		     echo "-------Master is fast-forwarded to the track $2 for the manifest------"
 		else
